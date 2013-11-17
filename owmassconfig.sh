@@ -3,12 +3,19 @@
 
 make_all()
 {
-	if [ $@ -lt 1 ]; then return; fi
+	if [ $# -lt 2 ] 
+	then
+		echo "Use: $0 <file_list> <file_changes> [destination]"
+		echo " file_list: list of devices Name:IP:Channel:Kind."
+		echo " file_changes: list of changes to do." 
+		return; 
+	fi
 
 	local list=$1
-	local destination=${2:-}
+	local chanfile=$2
+	local destination=${3:-}
 
-	[ ! -z $destination -a ! -d $destination -a ! -f $destination ] && mkdir -p $destination
+	[ ! -z "$destination" -a ! -d "$destination" -a ! -f "$destination" ] && mkdir -p $destination
 
 	for i in $(cat ${list})
 	do 
@@ -17,9 +24,9 @@ make_all()
 		CN=$(echo $i | cut -d ":" -f 3)
 		KIND=$(echo $i | cut -d ":" -f 4)
 		echo -n "Genera el ftixer $HN :"
-		make_recoved_file $IP $HN $CN $KIND.qmp.save.tar.gz
+		make_recoved_file $IP $HN $CN $chanfile $KIND.qmp.save.tar.gz
 		[ -f $HN.qmp.save.tar.gz ] && echo "OK"
-		if [ -d $destination -a -f $HN.qmp.save.tar.gz ]
+		if [ ! -z "$destination" -a -d "$destination" -a -f $HN.qmp.save.tar.gz ]
 		then
 			mv $HN.qmp.save.tar.gz $destination
 		fi
@@ -41,14 +48,15 @@ qmpdef_recover()
 make_recoved_file()
 {
 	
-FILEDATA=${4:-tlwr841v8.qmp.save.tar.gz}
-DEBUG=${5:-n}
-DIR=${6:-localtmp}
+CHANGESFILES=${4:-changes.txt}
+FILEDATA=${5:-tlwr841v8.qmp.save.tar.gz}
+DEBUG=${6:-n}
+DIR=${7:-localtmp}
 
 if [ $# -lt 3 ] 
 	then
 	echo "Generate qmp recover status file. To use in node."
-	echo "	$0 <IP> <HOSTNAME> <CHANNEL> [filename. Default: ${FILEDATA}] [Debug (y/n). Default: ${DEBUG}] [work directory. Default: ${DIR}]"
+	echo "	$0 <IP> <HOSTNAME> <CHANNEL> [Changes File. Default: ${CHANGESFILES}][filename. Default: ${FILEDATA}] [Debug (y/n). Default: ${DEBUG}] [work directory. Default: ${DIR}]"
 	return
 fi
 if [ ! -f ${FILEDATA} ];
@@ -89,7 +97,7 @@ do
 		sed -i -e "s|$ORIG|$DEST|g" $i; 
 	done
 
-done < ../changes.txt
+done < ../$4
 
 tar zcf ../${HOSTNAMEDEST}.qmp.save.tar.gz *	
 cd ..
@@ -101,3 +109,4 @@ then
 fi
 }
 
+make_all $@

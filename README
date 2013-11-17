@@ -1,0 +1,34 @@
+owmassconfig
+------------
+
+Per que serveix?
+
+Serveix per configurar massivament molts routers amb la mateixa configuració, però canviant pocs parametres.
+
+Com ho preparem?
+
+Hem de prepara un node, ja sigui per l'entorn gràfic o via consola. Una vegada preparat hem d'extreure la configuaració amb:
+
+node# qmpcontrol save_state
+
+Ens emportarem la configuració:
+
+computer# scp root@node:/tmp/qmp.save.tar.gz .
+
+Prepararem els fitxers de canvis, hi ha dos:
+
+* llista de canvis: Canvis que s'han d'aplicar en aquest nodes. Cada linea hi haurà dos parametres separats per el simbol | per dir busquem i remplacem als fitxer de configuració
+Per exemple:
+
+###IP###|$1
+###HOSTNAME###|$2
+option channel ###CHANNEL###|option channel $3
+
+* llista de nodes: Cada fila serà un node separat per : 
+Per exemple:
+HOSTNAME:IP:CHANNEL:Fitxer_configuració
+
+Una vegada tinguem aquest dos fitxers hem de instal·lar qmp a un node, deixar-lo executar un cop, copiar el fitxer al node a /tmp/qmp.save.tar.gz i executar:
+
+node# qmpcontrol recover_state
+
