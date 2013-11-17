@@ -16,7 +16,7 @@ make_all()
 		IP=$(echo $i | cut -d ":" -f 2 | cut -d "/" -f 1)
 		CN=$(echo $i | cut -d ":" -f 3)
 		KIND=$(echo $i | cut -d ":" -f 4)
-		echo -c "Genera el ftixer $HN :"
+		echo -n "Genera el ftixer $HN :"
 		make_recoved_file $IP $HN $CN $KIND.qmp.save.tar.gz
 		[ -f $HN.qmp.save.tar.gz ] && echo "OK"
 		if [ -d $destination -a -f $HN.qmp.save.tar.gz ]
@@ -78,7 +78,11 @@ do
                 DEST=$(echo "$DEST"|sed -e "s/${P}/${PARM}/g")
         fi
 	done
-	echo "Change '$ORIG' -> '$DEST'"
+
+	if [ ${DEBUG} == "y" ]
+	then	
+		echo "Change '$ORIG' -> '$DEST'"
+	fi
 
 	for i in $(fgrep -sR "$ORIG" *|cut -d: -f1|sort -u); 
 	do 
@@ -91,7 +95,7 @@ tar zcf ../${HOSTNAMEDEST}.qmp.save.tar.gz *
 cd ..
 rm -rf $DIR
 
-if [ ${DEBUG} -eq 'y' ]
+if [ ${DEBUG} == "y" ]
 then
 	echo "The ${HOSTNAMEDEST}.qmp.save.tar.gz was create."
 fi
