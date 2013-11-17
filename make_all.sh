@@ -8,21 +8,21 @@ make_all()
 	local list=$1
 	local destination=${2:-}
 
+	[ ! -z $destination -a ! -d $destination -a ! -f $destination ] && mkdir -p $destination
+
 	for i in $(cat ${list})
 	do 
 		HN=$(echo $i | cut -d ":" -f 1)
 		IP=$(echo $i | cut -d ":" -f 2 | cut -d "/" -f 1)
 		CN=$(echo $i | cut -d ":" -f 3)
 		KIND=$(echo $i | cut -d ":" -f 4)
-		if [ -f $KIND.qmp.save.tar.gz ];
-			then
-				echo Genera el ftixer $HN
-				make_recoved_file $IP $HN $CN 
-				if [ ! -z $destination]
-				then
-					mv $KIND.qmp.save.tar.gz $destination
-				fi
-			fi
+		echo -c "Genera el ftixer $HN :"
+		make_recoved_file $IP $HN $CN $KIND.qmp.save.tar.gz
+		[ -f $HN.qmp.save.tar.gz ] && echo "OK"
+		if [ -d $destination -a -f $HN.qmp.save.tar.gz ]
+		then
+			mv $HN.qmp.save.tar.gz $destination
+		fi
 	done
 }
 
@@ -42,12 +42,13 @@ make_recoved_file()
 {
 	
 FILEDATA=${4:-tlwr841v8.qmp.save.tar.gz}
-DIR=${5:-localtmp}
+DEBUG=${5:-n}
+DIR=${6:-localtmp}
 
 if [ $# -lt 3 ] 
 	then
 	echo "Generate qmp recover status file. To use in node."
-	echo "	$0 <IP> <HOSTNAME> <CHANNEL> [filename. Default: ${FILEDATA}] [work directory. Default: ${DIR}]"
+	echo "	$0 <IP> <HOSTNAME> <CHANNEL> [filename. Default: ${FILEDATA}] [Debug (y/n). Default: ${DEBUG}] [work directory. Default: ${DIR}]"
 	return
 fi
 if [ ! -f ${FILEDATA} ];
@@ -90,6 +91,9 @@ tar zcf ../${HOSTNAMEDEST}.qmp.save.tar.gz *
 cd ..
 rm -rf $DIR
 
-echo "The ${HOSTNAMEDEST}.qmp.save.tar.gz was create."
+if [ ${DEBUG} -eq 'y' ]
+then
+	echo "The ${HOSTNAMEDEST}.qmp.save.tar.gz was create."
+fi
 }
 
